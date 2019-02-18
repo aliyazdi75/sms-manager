@@ -1,10 +1,10 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}{{ sms.title }}{% endblock %}
+{% block title %}{{ sms.number }}{% endblock %}
 
 {% block body %}
     <h1>{{ sms.number }}</h1>
     <p>{{ sms.body }}</p>
     <hr>
-    <a href="/{{ path('app_api_sms_list') }}">Go Back</a>
+    <a href="/sms_list">Go Back</a>
 {% endblock %}

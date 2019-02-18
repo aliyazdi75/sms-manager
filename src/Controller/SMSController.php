@@ -13,25 +13,34 @@ use App\Entity\Sms;
 use FOS\RestBundle\Controller\Annotations\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Form\Extension\Core\Type\SubmitType;
+use Symfony\Component\Form\Extension\Core\Type\TextareaType;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\HttpFoundation\Request;
 
-class SMSController extends AbstractController {
+class SMSController extends AbstractController
+{
 
     /**
      * @Route("/sms_list", name="sms_list")
      * @Method({"GET"})
      */
-    public function index() {
+    public function index()
+    {
 
-        $articles= $this->getDoctrine()->getRepository(Sms::class)->findAll();
+        $sms = $this->getDoctrine()->getRepository(Sms::class)->findAll();
 
-        return $this->render('sms/index.html.twig', array('articles' => $articles));
+        return $this->render('sms/index.html.twig', array('sms' => $sms));
     }
 
     /**
      * @Route("/sms/new", name="new_sms")
      * Method({"GET", "POST"})
+     * @param Request $request
+     * @return \Symfony\Component\HttpFoundation\RedirectResponse|\Symfony\Component\HttpFoundation\Response
      */
-    public function new(Request $request) {
+    public function new(Request $request)
+    {
         $sms = new Sms();
 
         $form = $this->createFormBuilder($sms)
@@ -51,7 +60,7 @@ class SMSController extends AbstractController {
 
         $form->handleRequest($request);
 
-        if($form->isSubmitted() && $form->isValid()) {
+        if ($form->isSubmitted() && $form->isValid()) {
             $sms = $form->getData();
 
             $entityManager = $this->getDoctrine()->getManager();
@@ -68,23 +77,48 @@ class SMSController extends AbstractController {
 
     /**
      * @Route("/sms/{id}", name="sms_show")
+     * @param $id
+     * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function show($id) {
-        $article = $this->getDoctrine()->getRepository(Article::class)->find($id);
+    public function show($id)
+    {
+        $sms = $this->getDoctrine()->getRepository(Sms::class)->find($id);
 
-        return $this->render('sms/show.html.twig', array('article' => $article));
+        return $this->render('sms/show.html.twig', array('sms' => $sms));
     }
 
     function CallAPI($method, $url, $data = false)
     {
-        $ch = curl_init($url);
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        $result = curl_exec($ch);
-        if (curl_errno($ch)) {
-            throw new Exception(curl_error($ch));
+
+        try {
+            $ch = curl_init();
+
+            // Check if initialization had gone wrong*
+            if ($ch === false) {
+                throw new Exception('failed to initialize');
+            }
+
+            curl_setopt($ch, CURLOPT_URL, $url);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+
+            $content = curl_exec($ch);
+
+            // Check the return value of curl_exec(), too
+            if ($content === false) {
+                throw new Exception(curl_error($ch), curl_errno($ch));
+            }
+
+            /* Process $content here */
+
+            // Close curl handle
+            curl_close($ch);
+        } catch (Exception $e) {
+
+            trigger_error(sprintf(
+                'Curl failed with error #%d: %s',
+                $e->getCode(), $e->getMessage()),
+                E_USER_ERROR);
+
         }
-        curl_close($ch);
-        return $result;
     }
 }
