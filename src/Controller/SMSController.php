@@ -77,6 +77,7 @@ class SMSController extends AbstractController
                     $entityManager->persist($sms);
                     $entityManager->flush();
                     $this->CallAPI($apiUrl1);
+                    $sms->setStatus('Sent by api1');
                     return $this->redirectToRoute('sms_list');
                 } catch (Exception $e) {
                     $sms->setStatus('sending by api2');
@@ -84,6 +85,7 @@ class SMSController extends AbstractController
                     $entityManager->persist($sms);
                     $entityManager->flush();
                     $this->CallAPI($apiUrl2);
+                    $sms->setStatus('Sent by api2');
                     return $this->redirectToRoute('sms_list');
                 }
             } catch (Exception $e) {
@@ -97,6 +99,16 @@ class SMSController extends AbstractController
     }
 
     /**
+     * @Route("/sms/report", name="sms_report")
+     * @return Response
+     */
+    public function report()
+    {
+        $sms = $this->getDoctrine()->getRepository(Sms::class);
+        return $this->render('sms/report.html.twig', array('sms' => $sms));
+    }
+
+    /**
      * @Route("/sms/{id}", name="sms_show")
      * @param $id
      * @return \Symfony\Component\HttpFoundation\Response
@@ -106,16 +118,6 @@ class SMSController extends AbstractController
         $sms = $this->getDoctrine()->getRepository(Sms::class)->find($id);
 
         return $this->render('sms/show.html.twig', array('sms' => $sms));
-    }
-
-    /**
-     * @Route("/sms/report", name="sms_report")
-     * @return Response
-     */
-    public function report()
-    {
-        $sms = $this->getDoctrine()->getRepository(Sms::class)->findAll();
-        return $this->render('sms/index.html.twig', array('sms' => $sms));
     }
 
     /**
@@ -139,6 +141,7 @@ class SMSController extends AbstractController
                 $entityManager->persist($sms);
                 $entityManager->flush();
                 $this->CallAPI($apiUrl1);
+                $sms->setStatus('Sent by api1');
                 return $this->redirectToRoute('sms_list');
             } catch (Exception $e) {
                 $sms->setStatus('sending by api2');
@@ -146,6 +149,7 @@ class SMSController extends AbstractController
                 $entityManager->persist($sms);
                 $entityManager->flush();
                 $this->CallAPI($apiUrl2);
+                $sms->setStatus('Sent by api2');
                 return $this->redirectToRoute('sms_list');
             }
         } catch (Exception $e) {

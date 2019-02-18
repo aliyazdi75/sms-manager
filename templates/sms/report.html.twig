@@ -4,27 +4,42 @@
 
 {% block body %}
     {% if sms %}
-        <table id="sms" class="table table-striped">
+        <table id="sms_report" class="table table-striped">
             <thead>
             <tr>
-                <th>SMS Number</th>
-                <th>Body</th>
+                <th>Report</th>
+                <th>Count</th>
             </tr>
             </thead>
             <tbody>
-            {% for sms in sms %}
-                <tr>
-                    <td>{{ sms.number }}</td>
-                    <td>
-                        <a href="/sms/{{ sms.id }}" class="btn btn-dark">Show</a>
-                    </td>
-                </tr>
-            {% endfor %}
+            <tr>
+                <td>Total SMS Sent</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>Total SMS Sent by Api1</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>Total SMS Sent by Api2</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>Unsuccessful SMS Sent Percent by Api1</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>Unsuccessful SMS Sent Percent by Api2</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>Most 10 numbers SMS Sent</td>
+                <td></td>
+            </tr>
             </tbody>
         </table>
+        <a href="/sms_list">Go Back</a>
     {% else %}
-        <p>No SMS for report</p>
+        <p>No SMS to display report</p>
     {% endif %}
-    <hr>
-    <a href="/sms_list">Go Back</a>
 {% endblock %}
