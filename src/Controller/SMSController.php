@@ -11,12 +11,15 @@ namespace App\Controller;
 
 use App\Entity\Sms;
 use FOS\RestBundle\Controller\Annotations\Route;
+use http\Message\Body;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Config\Definition\Exception\Exception;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 class SMSController extends AbstractController
 {
@@ -87,38 +90,59 @@ class SMSController extends AbstractController
         return $this->render('sms/show.html.twig', array('sms' => $sms));
     }
 
-    function CallAPI($method, $url, $data = false)
+
+    /**
+     * @Route("/number={number}/send/sms&body={body}", name="new_sms_api")
+     * Method({"GET", "POST"})
+     */
+    public function RestAPI($number, $body)
     {
-
+        $sms = new Sms();
+        $sms->setNumber($number);
+        $sms->setBody($body);
+        $apiUrl1 = "http://localhost:81/?number=" . urlencode($number) . "/send/sms&body=" . urlencode($body);
+        $apiUrl2 = "http://localhost:82/?number=" . urlencode($number) . "/send/sms&body=" . urlencode($body);
         try {
-            $ch = curl_init();
-
-            // Check if initialization had gone wrong*
-            if ($ch === false) {
-                throw new Exception('failed to initialize');
+            try {
+                $this->CallAPI($apiUrl1);
+                $entityManager = $this->getDoctrine()->getManager();
+                $entityManager->persist($sms);
+                $entityManager->flush();
+                return $this->redirectToRoute('sms_list');
+            } catch (Exception $e) {
+                $this->CallAPI($apiUrl2);
+                $entityManager = $this->getDoctrine()->getManager();
+                $entityManager->persist($sms);
+                $entityManager->flush();
+                return $this->redirectToRoute('sms_list');
             }
-
-            curl_setopt($ch, CURLOPT_URL, $url);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-
-            $content = curl_exec($ch);
-
-            // Check the return value of curl_exec(), too
-            if ($content === false) {
-                throw new Exception(curl_error($ch), curl_errno($ch));
-            }
-
-            /* Process $content here */
-
-            // Close curl handle
-            curl_close($ch);
         } catch (Exception $e) {
 
-            trigger_error(sprintf(
-                'Curl failed with error #%d: %s',
-                $e->getCode(), $e->getMessage()),
-                E_USER_ERROR);
-
         }
+        return new Response('Something was Wrong!');
+    }
+
+    public function CallAPI($url)
+    {
+
+        $ch = curl_init();
+
+        // Check if initialization had gone wrong*
+        if ($ch === false) {
+            throw new Exception('failed to initialize');
+        }
+
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+
+        $content = curl_exec($ch);
+
+        if (curl_errno($ch)) {
+            throw new Exception(curl_error($ch));
+        }
+
+        // Close curl handle
+        curl_close($ch);
+        return $content;
     }
 }
