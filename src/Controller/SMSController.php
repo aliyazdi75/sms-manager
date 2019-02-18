@@ -66,11 +66,29 @@ class SMSController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $sms = $form->getData();
 
-            $entityManager = $this->getDoctrine()->getManager();
-            $entityManager->persist($sms);
-            $entityManager->flush();
-
-            return $this->redirectToRoute('sms_list');
+            $apiUrl1 = "http://localhost:81/?number=" . urlencode($sms->getNumber()) . "/send/sms&body="
+                . urlencode($sms->getBody());
+            $apiUrl2 = "http://localhost:82/?number=" . urlencode($sms->getNumber()) . "/send/sms&body="
+                . urlencode($sms->getBody());
+            try {
+                try {
+                    $sms->setStatus('sending by api1');
+                    $entityManager = $this->getDoctrine()->getManager();
+                    $entityManager->persist($sms);
+                    $entityManager->flush();
+                    $this->CallAPI($apiUrl1);
+                    return $this->redirectToRoute('sms_list');
+                } catch (Exception $e) {
+                    $sms->setStatus('sending by api2');
+                    $entityManager = $this->getDoctrine()->getManager();
+                    $entityManager->persist($sms);
+                    $entityManager->flush();
+                    $this->CallAPI($apiUrl2);
+                    return $this->redirectToRoute('sms_list');
+                }
+            } catch (Exception $e) {
+                $sms->setStatus('sending later!');
+            }
         }
 
         return $this->render('sms/new.html.twig', array(
@@ -90,10 +108,22 @@ class SMSController extends AbstractController
         return $this->render('sms/show.html.twig', array('sms' => $sms));
     }
 
+    /**
+     * @Route("/sms/report", name="sms_report")
+     * @return Response
+     */
+    public function report()
+    {
+        $sms = $this->getDoctrine()->getRepository(Sms::class)->findAll();
+        return $this->render('sms/index.html.twig', array('sms' => $sms));
+    }
 
     /**
      * @Route("/number={number}/send/sms&body={body}", name="new_sms_api")
      * Method({"GET", "POST"})
+     * @param $number
+     * @param $body
+     * @return \Symfony\Component\HttpFoundation\RedirectResponse|Response
      */
     public function RestAPI($number, $body)
     {
@@ -104,24 +134,30 @@ class SMSController extends AbstractController
         $apiUrl2 = "http://localhost:82/?number=" . urlencode($number) . "/send/sms&body=" . urlencode($body);
         try {
             try {
-                $this->CallAPI($apiUrl1);
+                $sms->setStatus('sending by api1');
                 $entityManager = $this->getDoctrine()->getManager();
                 $entityManager->persist($sms);
                 $entityManager->flush();
+                $this->CallAPI($apiUrl1);
                 return $this->redirectToRoute('sms_list');
             } catch (Exception $e) {
-                $this->CallAPI($apiUrl2);
+                $sms->setStatus('sending by api2');
                 $entityManager = $this->getDoctrine()->getManager();
                 $entityManager->persist($sms);
                 $entityManager->flush();
+                $this->CallAPI($apiUrl2);
                 return $this->redirectToRoute('sms_list');
             }
         } catch (Exception $e) {
-
+            $sms->setStatus('sending later!');
         }
-        return new Response('Something was Wrong!');
     }
 
+    /**
+     * curl get for Rest api
+     * @param $url
+     * @return bool|string
+     */
     public function CallAPI($url)
     {
 

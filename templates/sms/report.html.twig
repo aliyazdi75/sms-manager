@@ -8,17 +8,13 @@
             <thead>
             <tr>
                 <th>SMS Number</th>
-                <th>Status</th>
-                <th></th>
+                <th>Body</th>
             </tr>
             </thead>
             <tbody>
             {% for sms in sms %}
                 <tr>
                     <td>{{ sms.number }}</td>
-                    <td>
-                        <a class="btn btn-dark">{{ sms.status }}</a>
-                    </td>
                     <td>
                         <a href="/sms/{{ sms.id }}" class="btn btn-dark">Show</a>
                     </td>
@@ -27,6 +23,8 @@
             </tbody>
         </table>
     {% else %}
-        <p>No SMS to display</p>
+        <p>No SMS for report</p>
     {% endif %}
+    <hr>
+    <a href="/sms_list">Go Back</a>
 {% endblock %}
