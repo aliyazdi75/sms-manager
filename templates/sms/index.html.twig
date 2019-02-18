@@ -1,0 +1,28 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}SMS-Manager{% endblock %}
+
+{% block body %}
+    {% if sms %}
+        <table id="sms" class="table table-striped">
+            <thead>
+            <tr>
+                <th>SMS Number</th>
+                <th>Body</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for sms in sms %}
+                <tr>
+                    <td>{{ sms.number }}</td>
+                    <td>
+                        <a href="/sms/{{ sms.id }}" class="btn btn-dark">Show</a>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No sms to display</p>
+    {% endif %}
+{% endblock %}
