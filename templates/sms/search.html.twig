@@ -1,0 +1,32 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    {% if sms %}
+        <table id="sms_search" class="table table-striped">
+            <thead>
+            <tr>
+                <th>SMS Number</th>
+                <th>Status</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for sms in sms %}
+                <tr>
+                    <td>{{ sms.number }}</td>
+                    <td>
+                        <a class="btn btn-dark">{{ sms.status }}</a>
+                    </td>
+                    <td>
+                        <a href="/sms/{{ sms.id }}" class="btn btn-dark">Show</a>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No SMS find</p>
+    {% endif %}
+    <hr>
+    <a href="/sms_list">Go Back</a>
+{% endblock %}

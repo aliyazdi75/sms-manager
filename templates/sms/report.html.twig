@@ -3,43 +3,39 @@
 {% block title %}SMS-Manager{% endblock %}
 
 {% block body %}
-    {% if sms %}
-        <table id="sms_report" class="table table-striped">
-            <thead>
-            <tr>
-                <th>Report</th>
-                <th>Count</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr>
-                <td>Total SMS Sent</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>Total SMS Sent by Api1</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>Total SMS Sent by Api2</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>Unsuccessful SMS Sent Percent by Api1</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>Unsuccessful SMS Sent Percent by Api2</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>Most 10 numbers SMS Sent</td>
-                <td></td>
-            </tr>
-            </tbody>
-        </table>
-        <a href="/sms_list">Go Back</a>
-    {% else %}
-        <p>No SMS to display report</p>
-    {% endif %}
+    <table id="sms_report" class="table table-striped">
+        <thead>
+        <tr>
+            <th>Report</th>
+            <th>Count</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td>Total SMS Sent</td>
+            <td>{{ total_sms_count }}</td>
+        </tr>
+        <tr>
+            <td>Total SMS Sent by Api1</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>Total SMS Sent by Api2</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>Unsuccessful SMS Sent Percent by Api1</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>Unsuccessful SMS Sent Percent by Api2</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>Most 10 numbers SMS Sent</td>
+            <td></td>
+        </tr>
+        </tbody>
+    </table>
+    <a href="/sms_list">Go Back</a>
 {% endblock %}

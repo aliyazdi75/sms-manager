@@ -62,9 +62,11 @@ class SMSController extends AbstractController
             ->getForm();
 
         $form->handleRequest($request);
+        $entityManager = $this->getDoctrine()->getManager();
 
         if ($form->isSubmitted() && $form->isValid()) {
             $sms = $form->getData();
+            $sms->setApi1Count(0);
 
             $apiUrl1 = "http://localhost:81/?number=" . urlencode($sms->getNumber()) . "/send/sms&body="
                 . urlencode($sms->getBody());
@@ -72,20 +74,24 @@ class SMSController extends AbstractController
                 . urlencode($sms->getBody());
             try {
                 try {
+                    $sms->setApi1Count($sms->getApi1Count() + 1);
                     $sms->setStatus('sending by api1');
                     $entityManager = $this->getDoctrine()->getManager();
                     $entityManager->persist($sms);
                     $entityManager->flush();
                     $this->CallAPI($apiUrl1);
                     $sms->setStatus('Sent by api1');
+                    $sms->setApiSent(1);
+                    $entityManager->flush();
                     return $this->redirectToRoute('sms_list');
                 } catch (Exception $e) {
+                    $sms->setApi2Count($sms->getApi2Count() + 1);
                     $sms->setStatus('sending by api2');
-                    $entityManager = $this->getDoctrine()->getManager();
-                    $entityManager->persist($sms);
                     $entityManager->flush();
                     $this->CallAPI($apiUrl2);
                     $sms->setStatus('Sent by api2');
+                    $sms->setApiSent(2);
+                    $entityManager->flush();
                     return $this->redirectToRoute('sms_list');
                 }
             } catch (Exception $e) {
@@ -105,7 +111,8 @@ class SMSController extends AbstractController
     public function report()
     {
         $sms = $this->getDoctrine()->getRepository(Sms::class);
-        return $this->render('sms/report.html.twig', array('sms' => $sms));
+        $total_sms_count = count($sms->findBy(['api_sent' => 1 or 2]));
+        return $this->render('sms/report.html.twig', array('total_sms_count' => $total_sms_count));
     }
 
     /**
@@ -121,6 +128,18 @@ class SMSController extends AbstractController
     }
 
     /**
+     * @Route("/sms/search/{number}", name="sms_search")
+     * @param $number
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
+    public function search($number)
+    {
+        $sms = $this->getDoctrine()->getRepository(Sms::class)->findBy(['number' => $number]);
+
+        return $this->render('sms/search.html.twig', array('sms' => $sms));
+    }
+
+    /**
      * @Route("/number={number}/send/sms&body={body}", name="new_sms_api")
      * Method({"GET", "POST"})
      * @param $number
@@ -132,24 +151,28 @@ class SMSController extends AbstractController
         $sms = new Sms();
         $sms->setNumber($number);
         $sms->setBody($body);
+        $entityManager = $this->getDoctrine()->getManager();
+        $entityManager->persist($sms);
         $apiUrl1 = "http://localhost:81/?number=" . urlencode($number) . "/send/sms&body=" . urlencode($body);
         $apiUrl2 = "http://localhost:82/?number=" . urlencode($number) . "/send/sms&body=" . urlencode($body);
         try {
             try {
+                $sms->setApi1Count($sms->getApi1Count() + 1);
                 $sms->setStatus('sending by api1');
-                $entityManager = $this->getDoctrine()->getManager();
-                $entityManager->persist($sms);
                 $entityManager->flush();
                 $this->CallAPI($apiUrl1);
                 $sms->setStatus('Sent by api1');
+                $sms->setApiSent(1);
+                $entityManager->flush();
                 return $this->redirectToRoute('sms_list');
             } catch (Exception $e) {
+                $sms->setApi2Count($sms->getApi2Count() + 1);
                 $sms->setStatus('sending by api2');
-                $entityManager = $this->getDoctrine()->getManager();
-                $entityManager->persist($sms);
                 $entityManager->flush();
                 $this->CallAPI($apiUrl2);
                 $sms->setStatus('Sent by api2');
+                $sms->setApiSent(2);
+                $entityManager->flush();
                 return $this->redirectToRoute('sms_list');
             }
         } catch (Exception $e) {
