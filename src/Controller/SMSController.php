@@ -112,7 +112,26 @@ class SMSController extends AbstractController
     {
         $sms = $this->getDoctrine()->getRepository(Sms::class);
         $total_sms_count = count($sms->findBy(['api_sent' => 1 or 2]));
-        return $this->render('sms/report.html.twig', array('total_sms_count' => $total_sms_count));
+        $api1_sms_count = count($sms->findBy(['api_sent' => 1]));
+        $api2_sms_count = count($sms->findBy(['api_sent' => 2]));
+        $Api1Count = 0;
+        $Api2Count = 0;
+        foreach ($sms->findAll() as $s) {
+            $Api1Count += $s->getApi1Count();
+            $Api2Count += $s->getApi2Count();
+        }
+        $unsuccessful_api1_sms_count = (1 - ($api1_sms_count) / ($Api1Count)) * 100;
+        $unsuccessful_api2_sms_count = (1 - ($api2_sms_count) / ($Api2Count)) * 100;
+        $most_10number = $sms->findMostRepeatedNumber();
+
+        return $this->render('sms/report.html.twig', array(
+            'total_sms_count' => $total_sms_count,
+            'api1_sms_count' => $api1_sms_count,
+            'api2_sms_count' => $api2_sms_count,
+            'unsuccessful_api1_sms_count' => $unsuccessful_api1_sms_count,
+            'unsuccessful_api2_sms_count' => $unsuccessful_api2_sms_count,
+            'most_10number' => $most_10number
+        ));
     }
 
     /**

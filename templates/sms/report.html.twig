@@ -17,23 +17,28 @@
         </tr>
         <tr>
             <td>Total SMS Sent by Api1</td>
-            <td></td>
+            <td>{{ api1_sms_count }}</td>
         </tr>
         <tr>
             <td>Total SMS Sent by Api2</td>
-            <td></td>
+            <td>{{ api2_sms_count }}</td>
         </tr>
         <tr>
             <td>Unsuccessful SMS Sent Percent by Api1</td>
-            <td></td>
+            <td>{{ unsuccessful_api1_sms_count }}</td>
         </tr>
         <tr>
             <td>Unsuccessful SMS Sent Percent by Api2</td>
-            <td></td>
+            <td>{{ unsuccessful_api2_sms_count }}</td>
         </tr>
         <tr>
             <td>Most 10 numbers SMS Sent</td>
-            <td></td>
+            <td>
+                {% for num in most_10number %}
+                    {{ num.number }}
+                    <br>
+                {% endfor %}
+            </td>
         </tr>
         </tbody>
     </table>
