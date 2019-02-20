@@ -36,46 +36,6 @@ class SMSController extends AbstractController
         return $this->render('sms/index.html.twig', array('sms' => $sms));
     }
 
-    /**
-     * @Route("/new/sms", name="new_sms")
-     * Method({"GET", "POST"})
-     * @param Request $request
-     * @return \Symfony\Component\HttpFoundation\RedirectResponse|\Symfony\Component\HttpFoundation\Response
-     */
-    public function new(Request $request)
-    {
-        $sms = new Sms();
-
-        $form = $this->createFormBuilder($sms)
-            ->add('number', TextType::class, array(
-                'required' => true,
-                'attr' => array('class' => 'form-control')
-            ))
-            ->add('body', TextareaType::class, array(
-                'required' => false,
-                'attr' => array('class' => 'form-control')
-            ))
-            ->add('send', SubmitType::class, array(
-                'label' => 'Send',
-                'attr' => array('class' => 'btn btn-primary mt-3')
-            ))
-            ->getForm();
-
-        $form->handleRequest($request);
-        $entityManager = $this->getDoctrine()->getManager();
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            $sms = $form->getData();
-            $sms->setApi1Count(0);
-            $sms->setApi2Count(0);
-            $entityManager->persist($sms);
-            $this->SendingProcess($sms, $entityManager);
-        }
-
-        return $this->render('sms/new.html.twig', array(
-            'form' => $form->createView()
-        ));
-    }
 
     /**
      * @Route("/sms/{id}", name="sms_show")
@@ -132,10 +92,53 @@ class SMSController extends AbstractController
     }
 
     /**
+     * @Route("/new/sms", name="new_sms")
+     * Method({"GET", "POST"})
+     * @param Request $request
+     * @return \Symfony\Component\HttpFoundation\RedirectResponse|\Symfony\Component\HttpFoundation\Response
+     */
+    public function new(Request $request)
+    {
+        $sms = new Sms();
+
+        $form = $this->createFormBuilder($sms)
+            ->add('number', TextType::class, array(
+                'required' => true,
+                'attr' => array('class' => 'form-control')
+            ))
+            ->add('body', TextareaType::class, array(
+                'required' => false,
+                'attr' => array('class' => 'form-control')
+            ))
+            ->add('send', SubmitType::class, array(
+                'label' => 'Send',
+                'attr' => array('class' => 'btn btn-primary mt-3')
+            ))
+            ->getForm();
+
+        $form->handleRequest($request);
+        $entityManager = $this->getDoctrine()->getManager();
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $sms = $form->getData();
+            $sms->setApi1Count(0);
+            $sms->setApi2Count(0);
+            $entityManager->persist($sms);
+            $this->SendingProcess($sms, $entityManager);
+            return $this->redirectToRoute('sms_list');
+        }
+
+        return $this->render('sms/new.html.twig', array(
+            'form' => $form->createView()
+        ));
+    }
+
+    /**
      * @Route("/number={number}/send/sms&body={body}", name="new_sms_api")
      * Method({"GET", "POST"})
      * @param $number
      * @param $body
+     * @return \Symfony\Component\HttpFoundation\RedirectResponse
      */
     public function RestAPI($number, $body)
     {
@@ -145,6 +148,7 @@ class SMSController extends AbstractController
         $entityManager = $this->getDoctrine()->getManager();
         $entityManager->persist($sms);
         $this->SendingProcess($sms, $entityManager);
+        return $this->redirectToRoute('sms_list');
     }
 
     /**
@@ -179,7 +183,6 @@ class SMSController extends AbstractController
         } catch (Exception $e) {
             $sms->setStatus('sending later!');
         }
-        return $this->redirectToRoute('sms_list');
     }
 
     /**
