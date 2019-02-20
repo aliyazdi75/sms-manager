@@ -1,25 +1,25 @@
 <nav class="navbar navbar-expand-sm navbar-dark bg-primary mb-3">
     <div class="container">
-        <a href="/sms_list" class="navbar-brand">SMS Manager</a>
+        <a href="/list/sms" class="navbar-brand">SMS Manager</a>
         <form class="form-inline my-2 my-lg-0">
             <input id="search_box" class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
         </form>
         <button class="btn btn-outline-success my-2 my-sm-0" onclick="search()">Search</button>
         <script>
             function search() {
-                location.href = '/sms/search/' + document.getElementById('search_box').value;
+                location.href = '/search/sms/' + document.getElementById('search_box').value;
             }
         </script>
         <div class="collapse navbar-collapse" id="mobile-nav">
             <ul class="navbar-nav ml-auto">
                 <li class="nav-item">
-                    <a href="/sms_list" class="nav-link">SMS List</a>
+                    <a href="/list/sms" class="nav-link">SMS List</a>
                 </li>
                 <li class="nav-item">
-                    <a href="/sms/report" class="nav-link">Report</a>
+                    <a href="/report/sms" class="nav-link">Report</a>
                 </li>
                 <li class="nav-item">
-                    <a href="/sms/new" class="nav-link">New SMS</a>
+                    <a href="/new/sms" class="nav-link">New SMS</a>
                 </li>
             </ul>
         </div>
