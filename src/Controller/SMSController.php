@@ -20,6 +20,8 @@ use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Process\Exception\ProcessTimedOutException;
+use Symfony\Component\Process\Process;
 
 class SMSController extends AbstractController
 {
@@ -182,6 +184,10 @@ class SMSController extends AbstractController
             }
         } catch (Exception $e) {
             $sms->setStatus('sending later!');
+            $entityManager->flush();
+            $this->SendAgain($sms, $entityManager);
+            $sms->setStatus('sending later!');
+            $entityManager->flush();
         }
     }
 
@@ -212,5 +218,20 @@ class SMSController extends AbstractController
         // Close curl handle
         curl_close($ch);
         return $content;
+    }
+
+    public function SendAgain($sms, $entityManager)
+    {
+        $process = new Process(['ls', '-lsa']);
+        $process->setTimeout(10);
+        $process->start();
+        while ($sms->getApiSent() !== 1 or $sms->getApiSent() !== 2) {
+            // check if the timeout is reached
+            try {
+                $process->checkTimeout();
+            } catch (ProcessTimedOutException $e) {
+                $this->SendingProcess($sms, $entityManager);
+            }
+        }
     }
 }
