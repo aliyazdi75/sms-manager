@@ -158,6 +158,9 @@
     "monolog/monolog": {
         "version": "1.24.0"
     },
+    "mtdowling/cron-expression": {
+        "version": "v1.2.1"
+    },
     "nelmio/cors-bundle": {
         "version": "1.5",
         "recipe": {
@@ -211,6 +214,9 @@
             "version": "4.0",
             "ref": "05daf6b214e54aed4089f3480f944a67ac3a7889"
         }
+    },
+    "shapecode/cron-bundle": {
+        "version": "3.2.3"
     },
     "symfony/apache-pack": {
         "version": "1.0",

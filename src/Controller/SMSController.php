@@ -10,8 +10,10 @@ namespace App\Controller;
 
 
 use App\Entity\Sms;
+use App\Controller\SendQueuedSMS;
 use FOS\RestBundle\Controller\Annotations\Route;
 use http\Message\Body;
+use PhpParser\Node\Expr\Array_;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Config\Definition\Exception\Exception;
@@ -25,6 +27,7 @@ use Symfony\Component\Process\Process;
 
 class SMSController extends AbstractController
 {
+    private $fail_SMS = array();
 
     /**
      * @Route("/list/sms", name="sms_list")
@@ -119,14 +122,12 @@ class SMSController extends AbstractController
             ->getForm();
 
         $form->handleRequest($request);
-        $entityManager = $this->getDoctrine()->getManager();
 
         if ($form->isSubmitted() && $form->isValid()) {
             $sms = $form->getData();
             $sms->setApi1Count(0);
             $sms->setApi2Count(0);
-            $entityManager->persist($sms);
-            $this->SendingProcess($sms, $entityManager);
+            $this->SendingProcess($sms);
             return $this->redirectToRoute('sms_list');
         }
 
@@ -147,19 +148,18 @@ class SMSController extends AbstractController
         $sms = new Sms();
         $sms->setNumber($number);
         $sms->setBody($body);
-        $entityManager = $this->getDoctrine()->getManager();
-        $entityManager->persist($sms);
-        $this->SendingProcess($sms, $entityManager);
+        $this->SendingProcess($sms);
         return $this->redirectToRoute('sms_list');
     }
 
     /**
      * @param $sms
-     * @param $entityManager
-     * @return \Symfony\Component\HttpFoundation\RedirectResponse
+     * @return void
      */
-    public function SendingProcess($sms, $entityManager)
+    public function SendingProcess($sms)
     {
+        $entityManager = $this->getDoctrine()->getManager();
+        $entityManager->persist($sms);
         $apiUrl1 = "http://localhost:81/?number=" . urlencode($sms->getNumber()) . "/send/sms&body="
             . urlencode($sms->getBody());
         $apiUrl2 = "http://localhost:82/?number=" . urlencode($sms->getNumber()) . "/send/sms&body="
@@ -173,6 +173,7 @@ class SMSController extends AbstractController
                 $sms->setStatus('Sent by api1');
                 $sms->setApiSent(1);
                 $entityManager->flush();
+                \array_diff($this->fail_SMS, [$sms]);
             } catch (Exception $e) {
                 $sms->setApi2Count($sms->getApi2Count() + 1);
                 $sms->setStatus('sending by api2');
@@ -181,13 +182,13 @@ class SMSController extends AbstractController
                 $sms->setStatus('Sent by api2');
                 $sms->setApiSent(2);
                 $entityManager->flush();
+                \array_diff($this->fail_SMS, [$sms]);
             }
         } catch (Exception $e) {
             $sms->setStatus('sending later!');
             $entityManager->flush();
-            $this->SendAgain($sms, $entityManager);
-            $sms->setStatus('sending later!');
-            $entityManager->flush();
+            array_push($this->fail_SMS, $sms);
+            $SendQueuedSMS = new SendQueuedSMS();
         }
     }
 
@@ -220,18 +221,8 @@ class SMSController extends AbstractController
         return $content;
     }
 
-    public function SendAgain($sms, $entityManager)
+    public function getFailSMSArray(): array
     {
-        $process = new Process(['ls', '-lsa']);
-        $process->setTimeout(10);
-        $process->start();
-        while ($sms->getApiSent() !== 1 or $sms->getApiSent() !== 2) {
-            // check if the timeout is reached
-            try {
-                $process->checkTimeout();
-            } catch (ProcessTimedOutException $e) {
-                $this->SendingProcess($sms, $entityManager);
-            }
-        }
+        return $this->fail_SMS;
     }
 }

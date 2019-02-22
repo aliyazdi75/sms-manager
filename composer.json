@@ -14,6 +14,7 @@
     "nelmio/cors-bundle": "^1.5",
     "sensio/framework-extra-bundle": "^5.2",
     "sensiolabs/security-checker": "^5.0",
+    "shapecode/cron-bundle": "^3.2",
     "symfony/apache-pack": "^1.0",
     "symfony/asset": "4.2.*",
     "symfony/console": "4.2.*",
@@ -23,6 +24,7 @@
     "symfony/framework-bundle": "4.2.*",
     "symfony/orm-pack": "^1.0",
     "symfony/process": "4.2.*",
+    "symfony/stopwatch": "4.2.*",
     "symfony/twig-bundle": "4.2.*",
     "symfony/yaml": "4.2.*"
   },
