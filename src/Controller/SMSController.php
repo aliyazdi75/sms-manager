@@ -188,7 +188,6 @@ class SMSController extends AbstractController
             $sms->setStatus('sending later!');
             $entityManager->flush();
             array_push($this->fail_SMS, $sms);
-            $SendQueuedSMS = new SendQueuedSMS();
         }
     }
 
