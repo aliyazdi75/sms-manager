@@ -172,7 +172,6 @@ class SMSController extends AbstractController
                 $sms->setStatus('Sent by api1');
                 $sms->setApiSent(1);
                 $entityManager->flush();
-                \array_diff($this->fail_SMS, [$sms]);
             } catch (Exception $e) {
                 $sms->setApi2Count($sms->getApi2Count() + 1);
                 $sms->setStatus('sending by api2');
@@ -181,7 +180,6 @@ class SMSController extends AbstractController
                 $sms->setStatus('Sent by api2');
                 $sms->setApiSent(2);
                 $entityManager->flush();
-                \array_diff($this->fail_SMS, [$sms]);
             }
         } catch (Exception $e) {
             $sms->setStatus('sending later!');
