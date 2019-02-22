@@ -27,7 +27,6 @@ use Symfony\Component\Process\Process;
 
 class SMSController extends AbstractController
 {
-    private $fail_SMS = array();
 
     /**
      * @Route("/list/sms", name="sms_list")
@@ -187,7 +186,6 @@ class SMSController extends AbstractController
         } catch (Exception $e) {
             $sms->setStatus('sending later!');
             $entityManager->flush();
-            array_push($this->fail_SMS, $sms);
         }
     }
 
@@ -218,10 +216,5 @@ class SMSController extends AbstractController
         // Close curl handle
         curl_close($ch);
         return $content;
-    }
-
-    public function getFailSMSArray(): array
-    {
-        return $this->fail_SMS;
     }
 }
